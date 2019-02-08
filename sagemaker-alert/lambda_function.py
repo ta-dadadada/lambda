@@ -54,9 +54,9 @@ def lambda_handler(event, context):
     atts = []
     for key, fields in field_map.items():
         if not fields:
-            text = f'起動している {key} はないみたい'
+            text = f'起動している {key} はないみたいじゃな。ぱないの！'
         else:
-            text = f'起動中の {key} 一覧'
+            text = f'{key} を見てきてやったぞ'
         atts.append({
             'pretext': text,  # 内容
             'fields': fields,
@@ -82,7 +82,7 @@ def create_view_for_regions(dic, func):
 
 
 def create_field(name: str, modified: str, region: str, short: bool = False) -> dict:
-    return {'title': name, 'value': f'{region}: {modified} から起動中', 'short': short}
+    return {'title': name, 'value': f'{region}: {modified} から起動しているようじゃ', 'short': short}
 
 
 def create_notebook_field(data: dict, region: str) -> dict:
