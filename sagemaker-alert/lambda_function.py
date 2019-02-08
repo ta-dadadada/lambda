@@ -22,6 +22,7 @@ def lambda_handler(event, context):
 
     # リージョンごとに実行
     notebooks_for_regions = {}
+    training_jobs_for_regions = {}
     endpoints_for_regions = {}
 
     for region in regions:
@@ -34,6 +35,12 @@ def lambda_handler(event, context):
         if len(notebooks) > 0:
             notebooks_for_regions[region] = notebooks
 
+        training_jobs = sm.list_training_jobs(
+            StatusEquals='InProgress'
+        )['TrainingJobSummaries']
+        if len(training_jobs) > 0:
+            training_jobs_for_regions[region] = training_jobs
+
         # 起動中のエンドポイントを取得する
         endpoints = sm.list_endpoints(
             StatusEquals='InService'
@@ -41,13 +48,14 @@ def lambda_handler(event, context):
         if len(endpoints) > 0:
             endpoints_for_regions[region] = endpoints
 
-    # ノートブックインスタンスとエンドポイントのそれぞれの表示内容を作成する
     field_map = {
         'notebook': create_view_for_regions(notebooks_for_regions, create_notebook_field),
+        'job': create_view_for_regions(training_jobs_for_regions, create_job_field),
         'endpoint': create_view_for_regions(endpoints_for_regions, create_endpoint_field),
     }
     color_map = {
         'notebook': '#439FE0',
+        'job': 'warning',
         'endpoint': 'good',
     }
     # Slackにメッセージを送る
@@ -62,7 +70,7 @@ def lambda_handler(event, context):
             'fields': fields,
             'color': color_map.get(key, 'warning')
         })
-    send_slack_message('SageMaker使用状況', attachments=atts)
+    send_slack_message(None, attachments=atts)
 
     return {
         'statusCode': 200,
@@ -91,8 +99,14 @@ def create_notebook_field(data: dict, region: str) -> dict:
     return create_field(name, modified, region)
 
 
+def create_job_field(data: dict, region: str) -> dict:
+    name = data['NotebookInstanceName']
+    modified = data['LastModifiedTime'].astimezone(JST).strftime('%Y/%m/%d %H:%M:%S')
+    return create_field(name, modified, region)
+
+
 def create_endpoint_field(data: dict, region: str) -> dict:
-    name = data['EndpointName']
+    name = data['TrainingJobName']
     created = data['CreationTime'].astimezone(JST).strftime('%Y/%m/%d %H:%M:%S')
     return create_field(name, created, region)
 
