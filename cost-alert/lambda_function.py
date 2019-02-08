@@ -43,16 +43,16 @@ date = jst_date.strftime('%Y-%m-%d')
 def build_message(cost, predicted):
     if float(cost) >= budget:
         color = '#ff0000' #red
-        emotion = '予算を超えてます！不要なリソースは削除しましょう！'
+        emotion = '予算を超えておるな！現実は厳しいの。'
 
     elif float(predicted) > budget:
         color = 'warning' #yellow
-        emotion = '予算を超えそうなので気をつけましょう。'
+        emotion = '予算を超えそうじゃな。せいぜい気をつけるがよい'
     else:
         color = 'good'    #green
-        emotion = '予算内におさまってます。'
+        emotion = '予算は余裕があるようじゃな。今すぐミスドに連れて行くがよい'
 
-    text = f'{date} までのAWSの料金は ${cost} です。今月の予測料金は ${predicted} になりそうです。\n'
+    text = f'{date} までのAWSの料金は ${cost} らしいの。このままだと ${predicted} くらいかかるかの\n'
     text = text + emotion
 
     atachements = {'text': text, 'color': color}
